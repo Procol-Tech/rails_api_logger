@@ -33,6 +33,9 @@ class RequestLog < ActiveRecord::Base
       body
     end
 
+    require "byebug"
+    byebug
+
     if request.respond_to?(:params) && request.params.present?
       if body.present? && body.is_a?(Hash)
         body = (body || {}).merge(request.params)
