@@ -12,6 +12,7 @@ class InboundRequestsLoggerMiddleware
   end
 
   def call(env)
+    byebug
     request = ActionDispatch::Request.new(env)
     logging = log?(env, request)
     if logging
