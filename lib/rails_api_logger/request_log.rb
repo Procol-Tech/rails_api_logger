@@ -25,7 +25,8 @@ class RequestLog < ActiveRecord::Base
     headers.merge!({ 'subdomain' => request.subdomain })
     headers = headers&.to_json || {}
 
-    switch_tenant(request)
+    # Commenting this out as this is used for OAuth2. Not our current use case in integrations.
+    # switch_tenant(request)
 
     body = request_body ? request_body.dup.force_encoding('UTF-8').encode('UTF-8', invalid: :replace) : nil
 
