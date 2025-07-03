@@ -21,9 +21,7 @@ class RequestLog < ActiveRecord::Base
   def self.from_request(request, loggable: nil, keep_headers: nil)
     request_body = (request.body.respond_to?(:read) ? request.body.read : request.body)
     headers_h = request&.each_header&.to_h { |k,v| [k, v.to_s] }
-    headers = headers_h&.filter { |k, v| !keep_headers || keep_headers.include?(k) }|| {}
-    headers.merge!({ 'subdomain' => request.subdomain })
-    headers = headers&.to_json || {}
+    headers = headers_h&.filter { |k, v| !keep_headers || keep_headers.include?(k) }&.to_json || {}
 
     switch_tenant(request)
 
