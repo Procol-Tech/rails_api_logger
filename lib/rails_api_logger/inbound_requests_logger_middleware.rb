@@ -72,6 +72,6 @@ class InboundRequestsLoggerMiddleware
   end
 
   def request_with_state_change?(request)
-    request.post? || request.put? || request.patch? || request.delete?
+    request.get? || request.post? || request.put? || request.patch? || request.delete?
   end
 end
