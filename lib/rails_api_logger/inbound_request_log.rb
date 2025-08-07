@@ -2,12 +2,12 @@ class InboundRequestLog < RequestLog
   require 'bcrypt'
 
   def request_body=(val)
-    # val[:password] = encrypted(val, :password) if present_in?(val, :password)
+    val[:password] = encrypted(val, :password) if present_in?(val, :password)
     self[:request_body] = val
   end
 
   def response_body=(val)
-    # val[:access_token] = encrypted(val, :access_token) if present_in?(val, :access_token)
+    val[:access_token] = encrypted(val, :access_token) if present_in?(val, :access_token)
     self[:response_body] = val
   end
 
