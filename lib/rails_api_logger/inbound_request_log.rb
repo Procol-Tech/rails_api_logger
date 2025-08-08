@@ -14,7 +14,7 @@ class InboundRequestLog < RequestLog
   private
 
   def encrypted(val, attr)
-    BCrypt::Password.create(val.with_indifferent_access[attr])
+    BCrypt::Password.create(val.with_indifferent_access[attr]).to_s
   end
 
   def present_in?(val, attr)
