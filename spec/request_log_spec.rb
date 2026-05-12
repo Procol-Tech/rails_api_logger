@@ -1,6 +1,58 @@
 require "spec_helper"
+require "action_dispatch"
+require "rack"
 
 RSpec.describe RequestLog do
+  describe ".from_request" do
+    before { allow(InboundRequestLog).to receive(:switch_tenant).and_return(nil) }
+
+    def build_request(body:, query_string: "", content_type: "application/json")
+      path = "/api/v1/things" + (query_string.empty? ? "" : "?#{query_string}")
+      env = Rack::MockRequest.env_for(
+        path,
+        method: "PATCH",
+        input: body,
+        "CONTENT_TYPE" => content_type
+      )
+      ActionDispatch::Request.new(env)
+    end
+
+    context "when JSON body is a Hash and query parameters are present" do
+      it "merges query parameters into the body Hash" do
+        request = build_request(body: '{"a":1,"b":2}', query_string: "rfx_number=RFX-8899")
+        log = InboundRequestLog.from_request(request)
+        expect(log.request_body).to eq("a" => 1, "b" => 2, "rfx_number" => "RFX-8899")
+      end
+    end
+
+    context "when JSON body is an Array and query parameters are present" do
+      it "preserves the Array under _json and includes query parameters" do
+        request = build_request(body: '[{"prNo":"0200715434"}]', query_string: "rfx_number=RFX-8899")
+        log = InboundRequestLog.from_request(request)
+        expect(log.request_body).to eq(
+          "_json" => [{ "prNo" => "0200715434" }],
+          "rfx_number" => "RFX-8899"
+        )
+      end
+    end
+
+    context "when body is empty and query parameters are present" do
+      it "stores query parameters as the body" do
+        request = build_request(body: "", query_string: "rfx_number=RFX-8899")
+        log = InboundRequestLog.from_request(request)
+        expect(log.request_body).to eq("rfx_number" => "RFX-8899")
+      end
+    end
+
+    context "when JSON body is an Array and no query parameters" do
+      it "stores the Array as-is" do
+        request = build_request(body: '[{"prNo":"0200715434"}]')
+        log = InboundRequestLog.from_request(request)
+        expect(log.request_body).to eq([{ "prNo" => "0200715434" }])
+      end
+    end
+  end
+
   describe ".failed" do
     [OutboundRequestLog, InboundRequestLog].each do |klass|
       it "returns only failed requests for #{klass}" do
