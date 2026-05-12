@@ -34,11 +34,12 @@ class RequestLog < ActiveRecord::Base
     end
 
     if request.respond_to?(:query_parameters) && request.query_parameters.present?
-      if body.present? && body.is_a?(Hash)
-        body = (body || {}).merge(request.query_parameters)
-      else
-        body = request.query_parameters
-      end
+      qp = request.query_parameters.to_h
+      body = case body
+             when Hash  then body.merge(qp)
+             when Array then { "_json" => body }.merge(qp)
+             else            qp
+             end
     end
 
     create_params = {
